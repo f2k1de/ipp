@@ -8,7 +8,11 @@
 	class sbcheck {
 		public $sblink = "https://tools.wmflabs.org/stimmberechtigung/";
 		function __construct() {
-			$title = $_GET['title'];
+			if(isset($_GET['title'])) {
+				$title = $_GET['title'];
+			} else {
+				$title = "";
+			}
 
 			if($title != "") {
 				if($this->seiteVorhanden($title) == false) {
@@ -22,7 +26,9 @@
 			if ($title == "") {
 				echo "Hier kannst du die Stimmberechtigung zu einer Adminkandidatur abfragen. Kopiere dazu den Link in das untenstehende Feld.<br />\nBitte habe etwas Geduld, währed die Abfrage ausgeführt wird.";
 				
-				echo "<form action='sbcheck.php' method='get'><input type='text' name='title' value='Wikipedia:Adminkandidaturen/' style='width:40vw;'><input type='submit' value='Los gehts'></form>";
+				echo "<form action='sbcheck.php' method='get'><input type='text' name='title' value='Wikipedia:Adminkandidaturen/' style='width:40vw;'>";
+				echo "<br />Wann ist die Kandidatur gestartet?  <input type='text' name='day' value='" . date ('d') . "' size='2' maxlength='2'></label>&nbsp;<label>Monat:&nbsp;<input type='text' name='mon' value='" . date('m') . "' size='2' maxlength='2' /></label>&nbsp;<label>Jahr:&nbsp;<input type='text' name='year' value='" . date('Y') . "' size='4' maxlength='4' /></label>&nbsp;<label>Uhrzeit:&nbsp;<input type='text' name='hour' value='" . date('H') . "' size='2' maxlegth='2' />&nbsp;:&nbsp;<input type='text' name='min' value='" . date('i') . "' size='2' maxlength='2' /></label></p>";
+				echo "<input type='submit' value='Los gehts'></form>";
 				exit;
 			} 
 
@@ -45,7 +51,6 @@
 			} else {
 					return false;
 				}
-
 		}
 
 	 	public function readSection($Title, $Section) {
@@ -53,7 +58,7 @@
 				$result = $this->httpRequest('action=query&prop=revisions&format=php&rvprop=content&rvlimit=1&rvcontentformat=text%2Fx-wiki&rvdir=older&rvsection=' . urlencode($Section) . '&titles=' . urlencode($Title));
 			} catch (Exception $e) {
 				throw $e;
-			}
+			} 
 			$Answer = strstr ($result, "s:1:\"*\";");
 			$Answer = substr ($Answer, 8);
 			$Answer = strstr ($Answer, "\"");
@@ -73,7 +78,7 @@
 
 					$userline .= "<tr>";
 					$userline .= "<td><a href='https://de.wikipedia.org/wiki/User:" . $user . "'>" . $user ."</a></td>";
-					$link = $this->sblink . "?user=" . urlencode($user);
+					$link = $this->sblink . "?user=" . urlencode($user) . "&day=" . urlencode($_GET['day']) . "&mon=" . urlencode($_GET['mon']) . "&year=" . urlencode($_GET['year']) . "&hour=" . urlencode($_GET['hour']) . "&min=" . urlencode($_GET['min']);
 					$userline .= "<td><a href='$link'>SB</a></td>";
 
 
@@ -87,15 +92,16 @@
 		
 					//$c = file_get_contents($link);
 					$stimmberechtigt = stripos($c, 'Allgemeine_Stimmberechtigung">(neu)</a>: stimmberechtigt') !== false;
+					if(!$stimmberechtigt) {
+						$stimmberechtigt = stripos($c, 'Allgemeine_Stimmberechtigung">(alt)</a>: stimmberechtigt') !== false;
+					}
 					$benutzerexistiert = stripos($c, 'Benutzer "' . $user . '" existiert nicht');
-					
-					
 
-			
-					if ($stimmberechtigt)
+					if ($stimmberechtigt) {
 						$userline .= "<td style='color:green;'>stimmberechtigt</td>";
-					else
+					} else {
 						$userline .= "<td style='color:red;'>nicht stimmberechtigt</td>";
+					}
 
 					$userline .= "</tr>\n";
 
@@ -119,7 +125,6 @@
 				$i++;
 			}
 			return $users;
-
 		}
 
 		public function getUsersAPI($taget) {
@@ -136,57 +141,54 @@
 				$return .= $users[$i] . "<br />";
 				$i++;
 			}
-			
 			return $users;
 		}
 
 
-	protected function httpRequest($Arguments, $Method = 'GET', $Target = 'w/api.php') {
-		$baseURL = 'https://de.wikipedia.org/' . $Target;
-		$Method = strtoupper($Method);
+		protected function httpRequest($Arguments, $Method = 'GET', $Target = 'w/api.php') {
+			$baseURL = 'https://de.wikipedia.org/' . $Target;
+			$Method = strtoupper($Method);
 
-   		$curl = curl_init();
-    	if ($curl === false) {
-      		throw new Exception('curl initialization failed.');
-		} else {
-	      	$this->curlHandle = $curl;
-		}
+			$curl = curl_init();
+			if ($curl === false) {
+				throw new Exception('curl initialization failed.');
+			} else {
+				$this->curlHandle = $curl;
+			}
 
-		if ($Arguments != '') {
-		if ($Method === 'POST') {
-			$requestURL = $baseURL;
-			$postFields = $Arguments;
-		} elseif ($Method === 'GET') {
-			$requestURL = $baseURL . '?' .
-					$Arguments;
-		} else 
-			throw new Exception('unknown http request method.');
+			if ($Arguments != '') {
+			if ($Method === 'POST') {
+				$requestURL = $baseURL;
+				$postFields = $Arguments;
+			} elseif ($Method === 'GET') {
+				$requestURL = $baseURL . '?' .
+						$Arguments;
+			} else 
+				throw new Exception('unknown http request method.');
+			}
+			if (!$requestURL) 
+			throw new Exception('no arguments for http request found.');
+			// set curl options
+			curl_setopt($this->curlHandle, CURLOPT_USERAGENT, "https://tools.wmflabs.org/freddy2001/ipp/sbcheck.php");
+			curl_setopt($this->curlHandle, CURLOPT_URL, $requestURL);
+			curl_setopt($this->curlHandle, CURLOPT_ENCODING, "UTF-8");
+			curl_setopt($this->curlHandle, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($this->curlHandle, CURLOPT_COOKIEFILE, realpath('Cookies' . "job" . '.tmp'));
+			curl_setopt($this->curlHandle, CURLOPT_COOKIEJAR, realpath('Cookies' . "job" . '.tmp'));
+			// if posted, add post fields
+			if ($Method === 'POST' && $postFields != '') {
+				curl_setopt($this->curlHandle, CURLOPT_POST, 1);
+				curl_setopt($this->curlHandle, CURLOPT_POSTFIELDS, $postFields);
+			} else {
+				curl_setopt($this->curlHandle, CURLOPT_POST, 0);
+				curl_setopt($this->curlHandle, CURLOPT_POSTFIELDS, '');
+			}
+			// perform request
+			$rqResult = curl_exec($this->curlHandle);
+			if ($rqResult === false)
+			throw new Exception('curl request failed: ' . curl_error($this->curlHandle));
+			return $rqResult;
 		}
-		if (!$requestURL) 
-		throw new Exception('no arguments for http request found.');
-		// set curl options
-		curl_setopt($this->curlHandle, CURLOPT_USERAGENT, "https://tools.wmflabs.org/freddy2001/ipp/sbcheck.php");
-		curl_setopt($this->curlHandle, CURLOPT_URL, $requestURL);
-		curl_setopt($this->curlHandle, CURLOPT_ENCODING, "UTF-8");
-		curl_setopt($this->curlHandle, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($this->curlHandle, CURLOPT_COOKIEFILE, realpath('Cookies' . "job" . '.tmp'));
-		curl_setopt($this->curlHandle, CURLOPT_COOKIEJAR, realpath('Cookies' . "job" . '.tmp'));
-		// if posted, add post fields
-		if ($Method === 'POST' && $postFields != '') {
-		curl_setopt($this->curlHandle, CURLOPT_POST, 1);
-		curl_setopt($this->curlHandle, CURLOPT_POSTFIELDS, $postFields);
-		} else {
-		curl_setopt($this->curlHandle, CURLOPT_POST, 0);
-		curl_setopt($this->curlHandle, CURLOPT_POSTFIELDS, '');
-		}
-		// perform request
-		$rqResult = curl_exec($this->curlHandle);
-		if ($rqResult === false)
-		throw new Exception('curl request failed: ' . curl_error($this->curlHandle));
-		return $rqResult;
-	 }
-	
-
 	}
 
 $page = new sbcheck();
