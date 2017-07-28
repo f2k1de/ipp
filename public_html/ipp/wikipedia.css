@@ -1,0 +1,145 @@
+/* wikipedia.css */
+
+body
+{
+  font-family:Verdana, Sans-Serif;
+  font-size:10pt;
+  color:#FFFFFF;
+  background-color:#515151;
+  background-image:url('gfx/back.jpg');
+  background-attachment:fixed;
+  background-repeat:no-repeat;
+  padding:0; margin:0;
+}
+
+img
+{
+  border-width:0;
+}
+
+/* Oberer Balken */
+#info_balken
+{
+  clear:both;
+  height:64px; width:100%; 
+  background-image:url('gfx/white_85p.png');
+  padding:0;
+  display:block;
+  padding:18px;
+  padding-left:32px;
+}
+/* IE-Fix */
+* html #info_balken
+{
+  background-image:url('gfx/clearpixel.gif');
+  filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='gfx/white_85p.png', sizingMethod='scale');
+}
+
+#info_text
+{
+  color:#27295C;
+  font-size:52px;
+  font-weight:bolder;
+  letter-spacing:-3px;
+}
+
+#url
+{
+  display:none;
+}
+
+#navigation
+{
+  float:right; width:350px;
+  background-image:url('gfx/white_85p.png');
+  margin-top:6px;
+  margin-bottom:6px;
+}
+/* IE-Fix */
+* html #navigation
+{
+  background-image:url('gfx/clearpixel.gif');
+  filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='gfx/white_85p.png', sizingMethod='scale');
+}
+/* Innerer Navigation-Frame als Fix für IE-Probleme */
+#navigation_inner
+{
+  float:left;
+  padding:10px;
+  font-weight:bold;
+  color:#27295C;
+  text-decoration:none;
+  display:block;
+  width:320px;
+}
+#navigation_inner img
+{
+  float:left;
+  margin-right:10px;
+}
+
+/* Inhalt */
+#inhalt
+{
+  margin-top:15px;
+  margin-left:32px;
+  margin-right:32px;
+}
+
+#inhalt h1
+{
+  width:100%;
+  border-bottom:1px solid #FFFFFF;
+  font-size:20pt;
+}
+
+#inhalt a { color:#FFFFFF; }
+#inhalt a:visited { color:#C1C1C1; }
+
+/* Unterer weisser Balken fuer Impressum... */
+#navi_balken
+{
+  width:100%; 
+  margin-top:20px; 
+  padding:3px 0;
+  color:#27295C;
+  clear:both;
+  text-align:center;
+  background-image:url('gfx/white_85p.png');
+}
+/* IE-Fix */
+* html #navi_balken
+{
+  background-image:url('gfx/clearpixel.gif');
+  filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='gfx/white_85p.png', sizingMethod='scale');
+}
+#navi_balken a
+{ color:#27295C; text-decoration:none; }
+#navi_balken a:hover
+{ text-decoration:underline; }
+#navi_balken p
+{ margin:0; }
+
+/* Besucheranzahl / Copyrighthinweis */
+#copyright
+{
+  padding:10px;
+  text-align:center;
+}
+
+#copyright a
+{
+  color:#FFFFFF;
+}
+
+.clearfix:after {
+    content: "."; 
+    display: block; 
+    height: 0; 
+    clear: both; 
+    visibility: hidden;
+}
+
+/* Hides from IE-mac \*/
+* html .clearfix {height: 1%;}
+/* End hide from IE-mac */
